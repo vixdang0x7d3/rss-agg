@@ -1,2 +1,2 @@
 # rss-agg
-Bootdotdev RSS Aggregator Project Walkthrough
+Gotta GO fast
