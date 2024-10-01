@@ -1,18 +1,32 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"os"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
 
 	godotenv.Load()
 	servePort := os.Getenv("PORT")
+
+	dbURL := os.Getenv("DB_URL")
+	if dbURL == "" {
+		log.Fatal("Database URL is not set")
+	}
+
+	db, err := sqlx.Connect("postgres", dbURL)
+	if err != nil {
+		log.Fatalf("Failed connecting to %s: %v", dbURL, err)
+	}
 
 	e := echo.New()
 
@@ -34,6 +48,7 @@ func main() {
 	v1Router.GET("/err", func(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong")
 	})
+	v1Router.POST("/users", handlerCreateUser(db))
 
 	e.Logger.Fatal(e.Start(":" + servePort))
 }
